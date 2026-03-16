@@ -1,0 +1,59 @@
+services:
+
+  vote:
+    image: voting-app-vote
+    ports:
+      - "8080:8080"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks:
+      - frontend
+      - backend
+
+  result:
+    image: voting-app-result
+    ports:
+      - "8081:8081"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks:
+      - frontend
+      - backend
+
+  worker:
+    image: voting-app-worker
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - backend
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  db-data:
+
+networks:
+  frontend:
+    driver: overlay
+  backend:
+    driver: overlay
