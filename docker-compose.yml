@@ -10,6 +10,7 @@ services:
     networks:
       - frontend
       - backend
+    restart: unless-stopped
 
   result:
     build: ./result
@@ -21,6 +22,7 @@ services:
     networks:
       - frontend
       - backend
+    restart: unless-stopped
 
   worker:
     build: ./worker
@@ -31,9 +33,12 @@ services:
         condition: service_healthy
     networks:
       - backend
+    restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.2.4-alpine
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -41,9 +46,10 @@ services:
       retries: 5
     networks:
       - backend
+    restart: unless-stopped
 
   db:
-    image: postgres:15-alpine
+    image: postgres:15.6-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -57,9 +63,24 @@ services:
       retries: 5
     networks:
       - backend
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - backend
+    restart: unless-stopped
 
 volumes:
   db-data:
+  redis-data:
 
 networks:
   frontend:
