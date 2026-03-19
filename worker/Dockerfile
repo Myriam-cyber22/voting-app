@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD pgrep -x dotnet || exit 1
+    CMD pidof dotnet || exit 1
 
 CMD ["dotnet", "Worker.dll"]
 
